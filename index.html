@@ -1,1 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trending Hashtags{% if platform %} - {{ platform }}{% endif %}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1da1f2 0%, #0d8bd9 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .hashtags-container {
+            padding: 30px;
+        }
+
+        .hashtag-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            border-left: 4px solid #1da1f2;
+        }
+
+        .hashtag-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            background: #e3f2fd;
+        }
+
+        .hashtag-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1da1f2;
+            text-decoration: none;
+        }
+
+        .hashtag-name:hover {
+            color: #0d8bd9;
+        }
+
+        .hashtag-volume {
+            background: #1da1f2;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px;
+            text-align: center;
+        }
+
+        .refresh-btn {
+            background: #1da1f2;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px auto;
+            display: block;
+        }
+
+        .refresh-btn:hover {
+            background: #0d8bd9;
+            transform: translateY(-2px);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .navbar {
+            width: 100%;
+            background: #22223b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+            margin-bottom: 30px;
+        }
+        .nav-link {
+            color: #fff;
+            text-decoration: none;
+            padding: 18px 32px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: background 0.2s, color 0.2s;
+            border-bottom: 3px solid transparent;
+            display: inline-block;
+        }
+        .nav-link.active, .nav-link:hover {
+            background: #1da1f2;
+            color: #fff;
+            border-bottom: 3px solid #fff;
+        }
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .hashtag-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .hashtag-volume {
+                align-self: flex-end;
+            }
+            .navbar {
+                flex-direction: column;
+            }
+            .nav-link {
+                width: 100%;
+                text-align: center;
+                padding: 14px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar">
+            <a href="/" class="nav-link{% if not platform or platform == 'Twitter' %} active{% endif %}">Twitter</a>
+            <a href="/instagram" class="nav-link{% if platform == 'Instagram' %} active{% endif %}">Instagram</a>
+            <a href="/tiktok" class="nav-link{% if platform == 'TikTok' %} active{% endif %}">TikTok</a>
+            <a href="/facebook" class="nav-link{% if platform == 'Facebook' %} active{% endif %}">Facebook</a>
+        </nav>
+        <div class="header">
+            <h1>🌍 Trending Hashtags{% if platform %} <span style="font-size:1.2rem; font-weight:400;">({{ platform }})</span>{% endif %}</h1>
+            <p>Discover what's happening around the world{% if platform %} on {{ platform }}{% endif %}</p>
+        </div>
+        
+        <div class="hashtags-container">
+            {% if hashtags %}
+                {% for tag in hashtags %}
+                    <div class="hashtag-item">
+                        <a href="{{ tag.url }}" target="_blank" class="hashtag-name">
+                            {{ tag.name }}
+                        </a>
+                        <span class="hashtag-volume">
+                            {% if tag.tweet_volume is defined and tag.tweet_volume not in [None, 'Unknown'] %}
+                                {{ "{:,}".format(tag.tweet_volume) }} tweets
+                            {% elif tag.tweet_volume == 'Unknown' %}
+                                🔥 Trending
+                            {% else %}
+                                <!-- For Instagram or missing tweet_volume -->
+                                #
+                            {% endif %}
+                        </span>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="loading">
+                    <p>Loading trending hashtags...</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="footer">
+            <p>Data refreshed automatically • Click hashtags to view on Twitter</p>
+        </div>
+    </div>
+
+    <script>
+        // Auto-refresh every 5 minutes
+        setTimeout(() => {
+            window.location.reload();
+        }, 300000);
+
+        // Add click tracking for hashtags
+        document.querySelectorAll('.hashtag-name').forEach(link => {
+            link.addEventListener('click', function() {
+                console.log('Clicked hashtag:', this.textContent);
+            });
+        });
+    </script>
+</body>
+</html>
 
