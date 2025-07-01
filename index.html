@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trending Hashtags</title>
+</head>
+<body>
+    <h1>🌍 Trending Hashtags</h1>
+    <ul>
+        {% for tag in hashtags %}
+            <li>{{ tag.name }} - {{ tag.tweet_volume or 'Unknown' }} tweets</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+
